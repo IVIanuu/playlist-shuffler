@@ -24,12 +24,6 @@ import retrofit2.*
 import retrofit2.http.*
 
 interface SpotifyApi {
-  @GET("me/playlists")
-  suspend fun getUsersPlaylists(
-    @Query("limit") limit: Int,
-    @Query("offset") offset: Int
-  ): Pager<SimplePlaylist>
-
   @GET("playlists/{id}")
   suspend fun getPlaylist(@Path("id") id: String): Playlist
 
@@ -52,11 +46,8 @@ interface SpotifyApi {
     @Body tracksToAdd: TracksToAdd
   )
 
-  @HTTP(method = "DELETE", path = "playlists/{playlist_id}/tracks", hasBody = true)
-  suspend fun removeTracksFromPlaylist(
-    @Path("playlist_id") playlistId: String,
-    @Body tracksToRemove: TracksToRemove
-  )
+  @DELETE("playlists/{playlist_id}/followers")
+  suspend fun unfollowPlaylist(@Path("playlist_id") playlistId: String)
 
   @GET("me")
   suspend fun getCurrentUser(): User

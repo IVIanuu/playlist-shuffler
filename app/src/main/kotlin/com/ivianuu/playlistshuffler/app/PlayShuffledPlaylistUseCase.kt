@@ -46,29 +46,15 @@ typealias PlayShuffledPlaylistUseCase = suspend (String) -> Boolean
 
     println("Got info for ${playlist.name}")
 
-    val shufflePlaylistId = collectIndexedPages {
-      spotifyApi.getUsersPlaylists(50, it)
-    }.firstOrNull { it.name == SHUFFLE_PLAYLIST_NAME }
-      ?.also { shufflePlaylist ->
-        spotifyApi.getPlaylistTracksPaged(shufflePlaylist.id)
-          .mapNotNull { it.track?.id }
-          .map { TrackToRemove("spotify:track:$it") }
-          .chunked(100)
-          .forEach { chunkedTracksToRemove ->
-            spotifyApi.removeTracksFromPlaylist(
-              shufflePlaylist.id,
-              TracksToRemove(chunkedTracksToRemove)
-            )
-          }
-      }
-      ?.id
-      ?: spotifyApi.createPlaylist(
-        spotifyApi.getCurrentUser().id,
-        CreatePlaylistOptions(
-          name = SHUFFLE_PLAYLIST_NAME,
-          public = false
-        )
-      ).id
+    val shufflePlaylistId = spotifyApi.createPlaylist(
+      spotifyApi.getCurrentUser().id,
+      CreatePlaylistOptions(
+        name = "${playlist.name} (Shuffled)",
+        public = false
+      )
+    ).id
+
+    spotifyApi.unfollowPlaylist(shufflePlaylistId)
 
     playlistTracks
       .shuffled()
@@ -85,7 +71,6 @@ typealias PlayShuffledPlaylistUseCase = suspend (String) -> Boolean
     println("Added tracks")
 
     withAppRemote {
-      playerApi.clearContext()
       playerApi.setShuffle(false).await()
       playerApi.play("spotify:playlist:$shufflePlaylistId").await()
     }
@@ -119,22 +104,6 @@ private inline fun <I> collectIndexedPages(
 
   return allItems
 }
-
-private const val DUMMY_TRACK_URI = "spotify:track:02uEjuRG2GnzUVvyL0KWro"
-
-private suspend fun PlayerApi.clearContext() {
-  play(DUMMY_TRACK_URI).await()
-  suspendCancellableCoroutine<Unit> { cont ->
-    val subscription = subscribeToPlayerState()
-      .setEventCallback { playerState ->
-        if (playerState.track.uri == DUMMY_TRACK_URI)
-          cont.resume(Unit)
-      }
-    cont.invokeOnCancellation { subscription.cancel() }
-  }
-}
-
-private const val SHUFFLE_PLAYLIST_NAME = "Playlist Shuffler"
 
 private suspend fun SpotifyApi.getPlaylistTracksPaged(id: String): List<PlaylistTrack> =
   collectIndexedPages { getPlaylistTracks(id, 100, it) }

@@ -53,10 +53,6 @@ import kotlinx.serialization.*
 
 @Serializable data class TracksToAdd(@SerialName("uris") val uris: List<String>)
 
-@Serializable data class TracksToRemove(@SerialName("tracks") val uris: List<TrackToRemove>)
-
-@Serializable data class TrackToRemove(@SerialName("uri") val uri: String)
-
 @Serializable data class CreatePlaylistOptions(
   @SerialName("name") val name: String,
   @SerialName("public") val public: Boolean

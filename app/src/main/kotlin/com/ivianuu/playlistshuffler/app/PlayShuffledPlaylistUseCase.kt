@@ -27,7 +27,7 @@ import com.spotify.android.appremote.api.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
-typealias PlayShuffledPlaylistUseCase = suspend (String) -> Unit
+typealias PlayShuffledPlaylistUseCase = suspend (String) -> Boolean
 
 @Provide fun playShuffledPlaylistUseCase(
   context: Context,
@@ -35,63 +35,69 @@ typealias PlayShuffledPlaylistUseCase = suspend (String) -> Unit
   navigator: Navigator,
   spotifyApi: SpotifyApi
 ): PlayShuffledPlaylistUseCase = { input ->
-  println("Received $input")
+  catch {
+    println("Received $input")
 
-  val playlistId = input.playlistId()
+    val playlistId = input.playlistId()
 
-  // retrieve info about the playlist to play
-  val playlist = spotifyApi.getPlaylist(playlistId)
-  val playlistTracks = spotifyApi.getPlaylistTracksPaged(playlistId)
+    // retrieve info about the playlist to play
+    val playlist = spotifyApi.getPlaylist(playlistId)
+    val playlistTracks = spotifyApi.getPlaylistTracksPaged(playlistId)
 
-  println("Got info for ${playlist.name}")
+    println("Got info for ${playlist.name}")
 
-  val shufflePlaylistId = collectIndexedPages {
-    spotifyApi.getUsersPlaylists(50, it)
-  }.firstOrNull { it.name == SHUFFLE_PLAYLIST_NAME }
-    ?.also { shufflePlaylist ->
-      spotifyApi.getPlaylistTracksPaged(shufflePlaylist.id)
-        .mapNotNull { it.track?.id }
-        .map { TrackToRemove("spotify:track:$it") }
-        .chunked(100)
-        .forEach { chunkedTracksToRemove ->
-          spotifyApi.removeTracksFromPlaylist(
-            shufflePlaylist.id,
-            TracksToRemove(chunkedTracksToRemove)
-          )
-        }
+    val shufflePlaylistId = collectIndexedPages {
+      spotifyApi.getUsersPlaylists(50, it)
+    }.firstOrNull { it.name == SHUFFLE_PLAYLIST_NAME }
+      ?.also { shufflePlaylist ->
+        spotifyApi.getPlaylistTracksPaged(shufflePlaylist.id)
+          .mapNotNull { it.track?.id }
+          .map { TrackToRemove("spotify:track:$it") }
+          .chunked(100)
+          .forEach { chunkedTracksToRemove ->
+            spotifyApi.removeTracksFromPlaylist(
+              shufflePlaylist.id,
+              TracksToRemove(chunkedTracksToRemove)
+            )
+          }
+      }
+      ?.id
+      ?: spotifyApi.createPlaylist(
+        spotifyApi.getCurrentUser().id,
+        CreatePlaylistOptions(
+          name = SHUFFLE_PLAYLIST_NAME,
+          public = false
+        )
+      ).id
+
+    playlistTracks
+      .shuffled()
+      .mapNotNull { it.track?.id }
+      .map { "spotify:track:$it" }
+      .chunked(100)
+      .forEach { chunkedUris ->
+        spotifyApi.addTracksToPlaylist(
+          shufflePlaylistId,
+          TracksToAdd(chunkedUris)
+        )
+      }
+
+    println("Added tracks")
+
+    withAppRemote {
+      playerApi.play("spotify:track:02uEjuRG2GnzUVvyL0KWro").await()
+      playerApi.setShuffle(false).await()
+      playerApi.play("spotify:playlist:$shufflePlaylistId").await()
     }
-    ?.id
-    ?: spotifyApi.createPlaylist(
-      spotifyApi.getCurrentUser().id,
-      CreatePlaylistOptions(
-        name = SHUFFLE_PLAYLIST_NAME,
-        public = false
-      )
-    ).id
 
-  playlistTracks
-    .shuffled()
-    .mapNotNull { it.track?.id }
-    .map { "spotify:track:$it" }
-    .chunked(100)
-    .forEach { chunkedUris ->
-      spotifyApi.addTracksToPlaylist(
-        shufflePlaylistId,
-        TracksToAdd(chunkedUris)
-      )
-    }
+    navigator.push(UrlKey("spotify:playlist:$shufflePlaylistId"))
 
-  println("Added tracks")
-
-  withAppRemote {
-    playerApi.play("spotify:track:02uEjuRG2GnzUVvyL0KWro").await()
-    playerApi.setShuffle(false).await()
-    playerApi.play("spotify:playlist:$shufflePlaylistId").await()
+    println("Launched app")
+    true
   }
-
-  navigator.push(UrlKey("spotify:playlist:$shufflePlaylistId"))
-
-  println("Launched app")
+    .onFailure { it.printStackTrace() }
+    .mapError { false }
+    .get()!!
 }
 
 private fun String.playlistId() =

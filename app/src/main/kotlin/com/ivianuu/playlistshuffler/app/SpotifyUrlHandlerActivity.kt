@@ -19,10 +19,13 @@ package com.ivianuu.playlistshuffler.app
 import android.content.*
 import android.os.*
 import androidx.activity.*
+import com.ivianuu.essentials.*
+import com.ivianuu.essentials.util.*
 import com.ivianuu.injekt.*
 import com.ivianuu.injekt.android.*
 import com.ivianuu.injekt.coroutines.*
 import com.ivianuu.injekt.scope.*
+import com.ivianuu.playlistshuffler.R
 import kotlinx.coroutines.*
 
 class SpotifyUrlHandlerActivity : ComponentActivity() {
@@ -36,7 +39,8 @@ class SpotifyUrlHandlerActivity : ComponentActivity() {
       }
     activityScope.element<SpotifyUrlHandlerActivityComponent>().run {
       scope.launch {
-        playShuffledPlaylist(url)
+        if (!playShuffledPlaylist(url))
+          showToast(R.string.shuffling_failed, toaster, rp)
         finish()
       }
     }
@@ -46,5 +50,7 @@ class SpotifyUrlHandlerActivity : ComponentActivity() {
 @Provide @ScopeElement<AppScope>
 class SpotifyUrlHandlerActivityComponent(
   val playShuffledPlaylist: PlayShuffledPlaylistUseCase,
-  val scope: InjektCoroutineScope<AppScope>
+  val rp: ResourceProvider,
+  val scope: InjektCoroutineScope<AppScope>,
+  val toaster: Toaster
 )

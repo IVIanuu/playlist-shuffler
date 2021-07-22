@@ -17,8 +17,10 @@
 package com.ivianuu.playlistshuffler.app
 
 import androidx.compose.material.*
+import androidx.compose.ui.*
 import com.google.accompanist.pager.*
 import com.ivianuu.essentials.store.*
+import com.ivianuu.essentials.ui.layout.*
 import com.ivianuu.essentials.ui.navigation.*
 import com.ivianuu.injekt.*
 import com.ivianuu.injekt.coroutines.*
@@ -32,7 +34,10 @@ import kotlinx.coroutines.flow.*
 @OptIn(ExperimentalPagerApi::class)
 @Provide
 val homeUi: ModelKeyUi<HomeKey, HomeModel> = {
-  Text("Nothing to see here")
+  Text(
+    text = "Nothing to see here",
+    modifier = Modifier.center()
+  )
 }
 
 class HomeModel

@@ -32,11 +32,14 @@
         tools:ignore="AllowBackup">
         <activity
             android:name=".app.SpotifyUrlHandlerActivity"
-            android:theme="@style/Theme.Es.Translucent">
+            android:theme="@style/Theme.Es.Translucent"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:host="open.spotify.com" />

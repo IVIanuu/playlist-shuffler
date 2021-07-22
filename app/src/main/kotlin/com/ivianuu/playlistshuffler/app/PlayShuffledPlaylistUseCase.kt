@@ -85,7 +85,7 @@ typealias PlayShuffledPlaylistUseCase = suspend (String) -> Boolean
     println("Added tracks")
 
     withAppRemote {
-      playerApi.play("spotify:track:02uEjuRG2GnzUVvyL0KWro").await()
+      playerApi.clearContext()
       playerApi.setShuffle(false).await()
       playerApi.play("spotify:playlist:$shufflePlaylistId").await()
     }
@@ -118,6 +118,20 @@ private inline fun <I> collectIndexedPages(
   }
 
   return allItems
+}
+
+private const val DUMMY_TRACK_URI = "spotify:track:02uEjuRG2GnzUVvyL0KWro"
+
+private suspend fun PlayerApi.clearContext() {
+  play(DUMMY_TRACK_URI).await()
+  suspendCancellableCoroutine<Unit> { cont ->
+    val subscription = subscribeToPlayerState()
+      .setEventCallback { playerState ->
+        if (playerState.track.uri == DUMMY_TRACK_URI)
+          cont.resume(Unit)
+      }
+    cont.invokeOnCancellation { subscription.cancel() }
+  }
 }
 
 private const val SHUFFLE_PLAYLIST_NAME = "Playlist Shuffler"

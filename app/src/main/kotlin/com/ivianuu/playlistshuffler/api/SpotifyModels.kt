@@ -43,12 +43,6 @@ import kotlinx.serialization.*
   @SerialName("name") val name: String
 )
 
-@Serializable data class SimplePlaylist(
-  @SerialName("id") val id: String,
-  @SerialName("name") val name: String,
-  @SerialName("images") val images: List<Image>
-)
-
 @Serializable data class RefreshToken(@SerialName("refresh_token") val refreshToken: String)
 
 @Serializable data class TracksToAdd(@SerialName("uris") val uris: List<String>)

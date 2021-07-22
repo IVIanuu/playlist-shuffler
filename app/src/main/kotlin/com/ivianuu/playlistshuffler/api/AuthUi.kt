@@ -43,7 +43,6 @@ import com.ivianuu.injekt.scope.*
 import com.ivianuu.playlistshuffler.R
 import com.ivianuu.playlistshuffler.api.*
 import com.ivianuu.playlistshuffler.app.*
-import com.ivianuu.playlistshuffler.home.*
 import com.spotify.sdk.android.auth.*
 import kotlinx.coroutines.flow.*
 

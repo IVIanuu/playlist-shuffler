@@ -148,4 +148,10 @@ private suspend fun <R> withAppRemote(
       }
     )
   }
-}.map { block(it) }
+}.map { appRemote ->
+  try {
+    block(appRemote)
+  } finally {
+    SpotifyAppRemote.disconnect(appRemote)
+  }
+}

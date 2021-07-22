@@ -31,9 +31,7 @@
   "com.ivianuu.injekt.android.*",
   "com.ivianuu.injekt.coroutines.*",
   "com.ivianuu.injekt.scope.*",
-  "com.ivianuu.playlistshuffler.api.*",
-  "com.ivianuu.playlistshuffler.home.*",
-  "com.ivianuu.playlistshuffler.network.*"
+  "com.ivianuu.playlistshuffler.api.*"
 )
 
 package com.ivianuu.playlistshuffler.app

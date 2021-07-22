@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ivianuu.playlistshuffler.network
+package com.ivianuu.playlistshuffler.api
 
 import com.ivianuu.injekt.*
 import com.ivianuu.injekt.scope.*

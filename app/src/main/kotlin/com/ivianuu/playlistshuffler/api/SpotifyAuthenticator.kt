@@ -65,6 +65,6 @@ import okhttp3.*
   }
 
   private companion object {
-    private const val MAX_RETRIES = 3
+    private const val MAX_RETRIES = 5
   }
 }

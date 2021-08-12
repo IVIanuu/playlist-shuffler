@@ -28,6 +28,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Es"
+        android:allowBackup="false"
         tools:ignore="AllowBackup">
         <activity
             android:name=".app.SpotifyUrlHandlerActivity"

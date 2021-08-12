@@ -29,7 +29,7 @@ object Deps {
   const val gson = "com.google.code.gson:gson:2.8.5"
 
   object Essentials {
-    private const val version = "0.0.1-dev911"
+    private const val version = "0.0.1-dev912"
     const val android = "com.ivianuu.essentials:essentials-android:$version"
     const val gradlePlugin = "com.ivianuu.essentials:essentials-gradle-plugin:$version"
     const val twilight = "com.ivianuu.essentials:essentials-twilight:$version"
